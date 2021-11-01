@@ -1,0 +1,14 @@
+{
+  "name": "p5jsprojects",
+  "version": "1.0.0",
+  "description": "boiler plate for ps5js projects with browser-sync",
+  "main": "sketch.js",
+  "scripts": {
+    "start": "browser-sync start --server 'src' -f -w"
+  },
+  "author": "Lucas deGomez",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "browser-sync": "^2.26.3"
+  }
+}
