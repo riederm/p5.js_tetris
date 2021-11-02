@@ -1,129 +1,164 @@
-
-const WIDTH = 10;
-const HEIGHT = 25;
-const BOX_WIDTH = 25;
-
-const field = [];
 const EMPTY = 'white';
+const COLORS = ['red', 'green', 'yellow', 'blue'];
 
-const ITEM_TYPE = {
+// enumeration for different tetris-pieces
+// for now we only support the I, the square and the L type
+const PIECE_TYPE = {
   streight: 0,
-  square: 1,
-  t: 2,
-  l: 3,
-  skew: 4
+  square:   1,
+  z:        2,
 }
 
-class /* struct */ Item {
-  type = ITEM_TYPE.l;
+class /* struct */ Piece {
+  type = PIECE_TYPE.streight;
   x = 0;
   y = 0;
   color = 'red';
 }
 
+const GAME_FIELD_WIDTH = 10;
+const GAME_FIELD_HEIGHT = 25;
+const BOX_WIDTH_PIXEL = 25;
+
+// the game field
+// field is a 2 dim array that represents the tetries field
+// a cell may contain a color from COLORs or WHITE 
 class /*struct*/ Game {
   field = [];
-  tick = 0;
-  current_item = new Item();
+  lastFrame = 0;
+  activePiece = new Piece();
 }
 
 const game = new Game();
 
 function setup() {
   createCanvas(640, 800);
-  for (let x = 0; x < WIDTH; x++) {
+  for (let x = 0; x < GAME_FIELD_WIDTH; x++) {
     game.field[x] = [];
-    for (let y = 0; y < HEIGHT; y++) {
+    for (let y = 0; y < GAME_FIELD_HEIGHT; y++) {
       game.field[x][y] = EMPTY;
     }
   }
 
-  game.current_item = getRandomItem();
-  game.current_item.x = 5;
-  game.tick = millis();
-  //update the item's position
-  place_item(game.current_item, game.current_item.color);
+  game.activePiece = getRandomItem();
+  game.activePiece.x = 5;
+  game.lastFrame = millis();
+  placePiece(game.activePiece, game.activePiece.color);
 }
 
 function getRandomItem() {
-  let i = new Item();
-  i.type = random([ITEM_TYPE.streight, ITEM_TYPE.square]);
-  i.color = random(['red', 'green', 'yellow', 'blue']);
-  i.y = 0;
-  i.x = 5;
-  return i;
+  let p = new Piece();
+  p.type = random([PIECE_TYPE.streight, PIECE_TYPE.square, PIECE_TYPE.z]);
+  p.color = random(COLORS);
+  p.y = 0;
+  p.x = 5;
+  return p;
 }
 
-function delete_item(item) {
-  place_item(item, EMPTY);
+function deletePiece(item) {
+  placePiece(item, EMPTY);
 }
 
-function place_item(item, color) {
+function placePiece(item, color) {
   switch (item.type) {
-    case ITEM_TYPE.streight:
+    case PIECE_TYPE.streight:
         for (let i = 0; i < 4; i++) {
-          if (item.y + i < HEIGHT) {
+          if (item.y + i < GAME_FIELD_HEIGHT) {
             game.field[item.x][item.y + i] = color;
           }
         }
       break;
-    case ITEM_TYPE.square:
+
+    case PIECE_TYPE.square:
       game.field[item.x][item.y] = color;
       game.field[item.x][item.y+1] = color;
       game.field[item.x+1][item.y] = color;
       game.field[item.x+1][item.y+1] = color;
       break;
+ 
+    case PIECE_TYPE.z :
+      game.field[item.x][item.y] = color;
+      game.field[item.x+1][item.y] = color;
+      game.field[item.x+1][item.y+1] = color;
+      game.field[item.x+2][item.y+1] = color;
+      break;
   }
 }
 
 function current_item_can_move() {
-  let current_item = game.current_item;
-  switch (game.current_item.type) {
-    case ITEM_TYPE.streight:
+  let current_item = game.activePiece;
+  switch (game.activePiece.type) {
+    case PIECE_TYPE.streight:
       return game.field[current_item.x][current_item.y + 4] == EMPTY;
-    case ITEM_TYPE.square:
+
+    case PIECE_TYPE.square:
       return game.field[current_item.x][current_item.y + 2 ] == EMPTY 
         && game.field[current_item.x + 1][current_item.y + 2] == EMPTY;
+
+    case PIECE_TYPE.z:
+      return game.field[current_item.x][current_item.y + 1] == EMPTY
+        && game.field[current_item.x+1][current_item.y + 2] == EMPTY
+        && game.field[current_item.x+2][current_item.y + 2] == EMPTY
+
   }
   return true;
 }
 
+/**
+ * acts as the game-tick
+ * 1. moves the current piece forward if necessary
+ * 2. aquires a new random piece for the next move if necessary
+ * 3. draws the board
+ * 
+ * this method is called continously to draw 60 fps
+ */
 function draw() {
-  let current_time = millis();
-  if (current_time - game.tick > 500) {
-    delete_item(game.current_item);
+  let now = millis();
+  //shall we tick? (aka. a game turn)
+  if (now - game.lastFrame > 500) { 
+
+    //delete the current piece from the board
+    deletePiece(game.activePiece);
 
     if (current_item_can_move()) {
-      game.current_item.y = game.current_item.y + 1;
-      place_item(game.current_item, game.current_item.color);
+      // move piece down
+      game.activePiece.y = game.activePiece.y + 1;
+      placePiece(game.activePiece, game.activePiece.color);
+
     } else {
-      place_item(game.current_item, game.current_item.color);
-      game.current_item = getRandomItem();
+      // leave piece where it is and get a new piece
+      placePiece(game.activePiece, game.activePiece.color);
+      game.activePiece = getRandomItem();
     }
-    game.tick = current_time;
+    //remember last tick-frame 
+    game.lastFrame = now;
   }
   
+  // draw the board
   push();
   translate(50,50);
-  // draw the board
-  for (let x = 0; x < WIDTH; x++) {
-    for (let y = 0; y < HEIGHT; y++) {
-      fill(game.field[x][y]);
-      rect(x*BOX_WIDTH, y*BOX_WIDTH, BOX_WIDTH, BOX_WIDTH); 
+  stroke('#bfbfbf');
+  strokeWeight(2);
+  for (let x = 0; x < GAME_FIELD_WIDTH; x++) {
+    for (let y = 0; y < GAME_FIELD_HEIGHT; y++) {
+      //fill the rectangle with whatever color we placed at (x,y)
+      let color = game.field[x][y];
+      fill(color);
+      rect(x*BOX_WIDTH_PIXEL, y*BOX_WIDTH_PIXEL, BOX_WIDTH_PIXEL, BOX_WIDTH_PIXEL); 
     }
   }
   pop();
 }
 
-
 function keyPressed() {
     if (keyCode === LEFT_ARROW) {
-      delete_item(game.current_item);
-      game.current_item.x--;
-      place_item(game.current_item, game.current_item.color);
+      deletePiece(game.activePiece);
+      game.activePiece.x--;
+      placePiece(game.activePiece, game.activePiece.color);
+
     } else if (keyCode == RIGHT_ARROW) {
-      delete_item(game.current_item);
-      game.current_item.x++;
-      place_item(game.current_item, game.current_item.color);
+      deletePiece(game.activePiece);
+      game.activePiece.x++;
+      placePiece(game.activePiece, game.activePiece.color);
     }
 }
