@@ -13,7 +13,6 @@ export class Box {
     }
 
     draw(p5){
-        console.log(this.color);
         p5.fill(this.color);
         p5.rect(this.x * BOX_WIDTH_PIXEL, this.y * BOX_WIDTH_PIXEL, BOX_WIDTH_PIXEL, BOX_WIDTH_PIXEL);
     }

@@ -2,9 +2,9 @@ import { Point } from "./point.js";
 
 // ENUM for different tetris-pieces
 export const PIECE_TYPE = {
-    streight: 0,
-    square: 1,
-    z: 2,
+    streight: 'streight',
+    square: 'square',
+    z: 'z',
 }
 
 export /*abstract*/ class Piece {
@@ -21,7 +21,7 @@ export /*abstract*/ class Piece {
     }
 
     getColor() {
-        return this.color;
+        return this.#color;
     }
 
     /*abstract*/ getOcupiedFields() {
@@ -52,6 +52,39 @@ export class StreightPiece extends Piece {
     getOcupiedFields() {
         return [
             this.coordinates,
+            this.coordinates.cloneRelative(0,1),
+            this.coordinates.cloneRelative(0,2),
+            this.coordinates.cloneRelative(0,3),
+        ];
+    }
+}
+
+export class ZPiece extends Piece {
+    constructor(x,y, color) {
+        super(x,y, color)
+    }
+
+    getOcupiedFields() {
+        return [
+            this.coordinates,
+            this.coordinates.cloneRelative(1,0),
+            this.coordinates.cloneRelative(1,1),
+            this.coordinates.cloneRelative(2,1),
+        ];
+    }
+}
+
+export class LPiece extends Piece {
+    constructor(x,y, color) {
+        super(x,y, color)
+    }
+
+    getOcupiedFields() {
+        return [
+            this.coordinates,
+            this.coordinates.cloneRelative(0,1),
+            this.coordinates.cloneRelative(0,2),
+            this.coordinates.cloneRelative(1,2),
         ];
     }
 }

@@ -1,7 +1,7 @@
 import { Border } from "./border.js";
 import { EMPTY } from "./box.js";
 import { Box } from "./box.js";
-import { BlockPiece, StreightPiece, Piece, PIECE_TYPE } from "./piece.js";
+import { BlockPiece, StreightPiece, Piece, PIECE_TYPE, ZPiece, LPiece } from "./piece.js";
 
 const COLORS = ['red', 'green', 'yellow', 'blue'];
 const GAME_FIELD_WIDTH = 10;
@@ -37,11 +37,11 @@ export class Game {
         this.placePiece(this.activePiece);
     }
 
-    getWidth(){
+    getWidth() {
         return GAME_FIELD_WIDTH;
     }
 
-    getHeight(){
+    getHeight() {
         return GAME_FIELD_HEIGHT;
     }
 
@@ -50,17 +50,15 @@ export class Game {
      * creates a random piece at (x=GAME_FIELD_WIDTH/2, y=0)
      */
     #getRandomItem() {
-        let pieces = [PIECE_TYPE.streight, PIECE_TYPE.square, PIECE_TYPE.z];
-        let activePiece = {};
-        let color = COLORS[Math.floor(Math.random()*COLORS.length)];
-        switch(pieces[Math.floor(Math.random()*pieces.length)]){
-            case PIECE_TYPE.streight:
-                return new StreightPiece(5, 0, color);
-            case PIECE_TYPE.square: 
-            default:
-                return new BlockPiece(5, 0, color);
+        let color = COLORS[Math.floor(Math.random() * COLORS.length)];
+        let pieces = [
+            new StreightPiece(5,0, color),
+            new BlockPiece(5,0, color),
+            new ZPiece(5,0, color),
+            new LPiece(5,0, color),
+        ];
 
-        }
+        return pieces[Math.floor(Math.random() * pieces.length)];
     }
 
     /**
@@ -81,14 +79,19 @@ export class Game {
     }
 
     draw(p5) {
+        p5.push();
+        p5.translate(50, 50);
+        p5.stroke('#bfbfbf');
+        p5.strokeWeight(2);
         for (let x = 0; x < GAME_FIELD_WIDTH; x++) {
             for (let y = 0; y < GAME_FIELD_HEIGHT; y++) {
-                const field = this.getField(x,y);
+                const field = this.getField(x, y);
                 field.draw(p5);
             }
         }
+        p5.pop();
     }
-    
+
 
     /**
      * perform a game tick. A Game-Tick means to perform
@@ -97,13 +100,7 @@ export class Game {
      */
     tick() {
         //delete the current piece from the board
-        if (currentItemCanMove()) {
-            // move piece down
-            movePiece(game.activePiece, 0, 1);
-        } else {
-            // leave piece where it is and get a new piece
-            game.activePiece = getRandomItem();
-        }
+        
     }
 
     /**
@@ -112,7 +109,7 @@ export class Game {
     getField(x, y) {
         if (x >= 0 && x < GAME_FIELD_WIDTH
             && y >= 0 && y < GAME_FIELD_HEIGHT) {
-                return this.field[x][y];
+            return this.field[x][y];
         }
         return new Border();
     }
@@ -121,8 +118,9 @@ export class Game {
      * helper method that updates the field's 
      */
     #doPlacePiece(piece, color) {
-        for (const p of piece.getOcupiedFields()) {
-            const f = this.getField(p.getX(), p.getY());
+        let ocupiedFileds = piece.getOcupiedFields();
+        for (const p of ocupiedFileds) {
+            let f = this.getField(p.getX(), p.getY());
             f.fill(color);
         }
     }

@@ -5,7 +5,7 @@ export class Point {
     
     constructor(x, y) {
         this.#x = x;
-        this.#y = x;
+        this.#y = y;
     }
 
     getX() {
@@ -17,6 +17,6 @@ export class Point {
     }
 
     cloneRelative(x, y) {
-        return new Point(this.#x + x, this.#y + y);
+        return new Point(this.getX() + x, this.getY() + y);
     }
 }
