@@ -47,10 +47,15 @@ window.draw = function () {
  */
 window.keyPressed = function () {
   if (keyCode === LEFT_ARROW) {
-    movePiece(game.activePiece, -1, 0);
+    game.move(-1, 0);
 
   } else if (keyCode == RIGHT_ARROW) {
-    movePiece(game.activePiece, +1, 0);
+    game.move(1, 0);
 
+  } else if (keyCode == UP_ARROW) {
+    game.turn();
+
+  } else if (keyCode == DOWN_ARROW) {
+    game.down();
   }
 }

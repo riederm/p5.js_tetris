@@ -3,7 +3,7 @@ import { EMPTY } from "./box.js";
 import { Box } from "./box.js";
 import { BlockPiece, StreightPiece, Piece, PIECE_TYPE, ZPiece, LPiece } from "./piece.js";
 
-const COLORS = ['red', 'green', 'yellow', 'blue'];
+const COLORS = ['red', 'green', 'yellow', 'blue', 'orange', 'pink', 'magenta'];
 const GAME_FIELD_WIDTH = 10;
 
 const GAME_FIELD_HEIGHT = 25;
@@ -100,7 +100,53 @@ export class Game {
      */
     tick() {
         //delete the current piece from the board
-        
+        let now = Date.now();
+        if (now - this.lastTick > 250) {
+            if (!this.move(0, 1)) {
+                this.activePiece = this.#getRandomItem();
+            }
+        }
+    }
+
+    move(deltaX, deltaY) {
+        this.deletePiece(this.activePiece);
+        this.activePiece.move(deltaX, deltaY);
+        if (this.hasConflict(this.activePiece)){
+            //move back
+            this.activePiece.move(-deltaX, -deltaY);
+            this.placePiece(this.activePiece);
+            //get new item
+            return false;
+        }else{
+            this.placePiece(this.activePiece);
+        }
+        return true;
+    }
+
+    turn() {
+        this.deletePiece(this.activePiece);
+        this.activePiece.turnUp();
+        if (this.hasConflict(this.activePiece)) {
+            this.activePiece.turnDown();
+        }
+        this.placePiece(this.activePiece);
+    }
+
+    down() {
+        while(this.move(0, 1)){
+        }
+        this.activePiece = this.#getRandomItem();
+    }
+
+    hasConflict(piece) {
+        let fields = piece.getOcupiedFields();
+        for (const f of fields) {
+            let field = this.getField(f.getX(), f.getY());
+            if (field.isFull()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
