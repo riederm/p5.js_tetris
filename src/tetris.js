@@ -47,12 +47,6 @@ function setup() {
 }
 
 function getRandomItem() {
-  let p = new Piece();
-  p.type = random([PIECE_TYPE.streight, PIECE_TYPE.square, PIECE_TYPE.z]);
-  p.color = random(COLORS);
-  p.y = 0;
-  p.x = 5;
-  return p;
 }
 
 function deletePiece(item) {
@@ -85,7 +79,7 @@ function placePiece(item, color) {
   }
 }
 
-function current_item_can_move() {
+function currentItemCanMove() {
   let current_item = game.activePiece;
   switch (game.activePiece.type) {
     case PIECE_TYPE.streight:
@@ -120,7 +114,7 @@ function draw() {
     //delete the current piece from the board
     deletePiece(game.activePiece);
 
-    if (current_item_can_move()) {
+    if (currentItemCanMove()) {
       // move piece down
       game.activePiece.y = game.activePiece.y + 1;
       placePiece(game.activePiece, game.activePiece.color);
@@ -128,6 +122,7 @@ function draw() {
     } else {
       // leave piece where it is and get a new piece
       placePiece(game.activePiece, game.activePiece.color);
+
       game.activePiece = getRandomItem();
     }
     //remember last tick-frame 
