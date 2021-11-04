@@ -1,100 +1,20 @@
-// game constants
-const EMPTY = 'white';
-const COLORS = ['red', 'green', 'yellow', 'blue'];
-const GAME_FIELD_WIDTH = 10;
-const GAME_FIELD_HEIGHT = 25;
-const BOX_WIDTH_PIXEL = 25;
+import {Game} from "./game.js"
+import { PIECE_TYPE } from "./piece.js";
 
-// ENUM for different tetris-pieces
-const PIECE_TYPE = {
-  streight: 0,
-  square: 1,
-  z: 2,
-}
-
-class /* struct */ Piece {
-  /**
-   * the type of piece (one of PIECE_TYPE)
-   */
-  type = PIECE_TYPE.streight;
-  /**
-   * the x coordinate of top left corner of the piece
-   */
-  x = 0;
-  /**
-   * the y coordinate of the top left corner of the piece
-   */
-  y = 0;
-  /**
-   * the piece's color - must not be EMPTY
-   */
-  color = 'red';
-}
-
-// the game field
-class /*struct*/ Game {
-  /**
-   * 2 dim array representing the game-field
-   * a cell may contain a color from COLOR or EMPTY
-   */
-  field = [];
-  /**
-   * the time of the last game-tick
-   */
-  lastTick = 0;
-  /**
-   * the active piece which moves at game-ticks
-   */
-  activePiece = new Piece();
-}
 const game = new Game();
-
+p5 = {};
 
 /**
  * Entry-Method for the game -> this is called by the p5.js framework
  * once in the beginning
  */
-function setup() {
+window.setup = function() {
   createCanvas(640, 800);
-
-  //initialize the game field
-  for (let x = 0; x < GAME_FIELD_WIDTH; x++) {
-    game.field[x] = [];
-    for (let y = 0; y < GAME_FIELD_HEIGHT; y++) {
-      game.field[x][y] = EMPTY;
-    }
-  }
-  game.activePiece = getRandomItem();
-  game.activePiece.x = 5;
-  game.lastTick = millis();
-  placePiece(game.activePiece, game.activePiece.color);
+  p5.rect = rect;
+  p5.fill = fill;
 }
 
-/**
- * creates a random piece at (x=GAME_FIELD_WIDTH/2, y=0)
- */
-function getRandomItem() {
-  let p = new Piece();
-  p.type = random([PIECE_TYPE.streight, PIECE_TYPE.square, PIECE_TYPE.z]);
-  p.color = random(COLORS);
-  p.y = 0;
-  p.x = Math.trunc(GAME_FIELD_WIDTH/2);
-  return p;
-}
 
-/**
- * removes the given item from the baord.
- * this clears all the item's fields to EMPTY
- */
-function deletePiece(item) {
-  placePiece(item, EMPTY);
-}
-
-/**
- * places the given item on the board.
- * technically this sets the item's fields to 
- * the item's color
- */
 function placePiece(item, color) {
   switch (item.type) {
     case PIECE_TYPE.streight:
@@ -126,21 +46,7 @@ function placePiece(item, color) {
  * otherwise false 
  */
 function currentItemCanMove() {
-  let current_item = game.activePiece;
-  switch (game.activePiece.type) {
-    case PIECE_TYPE.streight:
-      return game.field[current_item.x][current_item.y + 4] == EMPTY;
 
-    case PIECE_TYPE.square:
-      return game.field[current_item.x][current_item.y + 2] == EMPTY
-        && game.field[current_item.x + 1][current_item.y + 2] == EMPTY;
-
-    case PIECE_TYPE.z:
-      return game.field[current_item.x][current_item.y + 1] == EMPTY
-        && game.field[current_item.x + 1][current_item.y + 2] == EMPTY
-        && game.field[current_item.x + 2][current_item.y + 2] == EMPTY
-
-  }
   return true;
 }
 
@@ -149,10 +55,10 @@ function currentItemCanMove() {
  * given deltaX and deltaY values to its coordinates
  */
 function movePiece(piece, deltaX, deltaY) {
-  deletePiece(piece);
+  game.deletePiece(piece);
   piece.x += deltaX;
   piece.y += deltaY;
-  placePiece(piece, piece.color);
+  game.placePiece(piece);
 }
 
 /**
@@ -163,8 +69,8 @@ function movePiece(piece, deltaX, deltaY) {
  * 
  * this method is called continously to draw 60 fps
  */
-function draw() {
-  let now = millis();
+window.draw = function() {
+  let now = Date.now();
   //shall we tick?
   if (now - game.lastTick > 500) {
     gameTick();
@@ -174,7 +80,12 @@ function draw() {
   }
 
   // draw the board
-  drawBoard();
+  push();
+  translate(50, 50);
+  stroke('#bfbfbf');
+  strokeWeight(2);
+  game.draw(p5);
+  pop();
 }
 
 /**
@@ -193,32 +104,12 @@ function gameTick() {
   }
 }
 
-/**
- * draws the board's state as reflected by the game-struct
- * every element of game.field will be drawn as a filled 
- * rectangle
- */
-function drawBoard() {
-  push();
-  translate(50, 50);
-  stroke('#bfbfbf');
-  strokeWeight(2);
-  for (let x = 0; x < GAME_FIELD_WIDTH; x++) {
-    for (let y = 0; y < GAME_FIELD_HEIGHT; y++) {
-      //fill the rectangle with whatever color we placed at (x,y)
-      let color = game.field[x][y];
-      fill(color);
-      rect(x * BOX_WIDTH_PIXEL, y * BOX_WIDTH_PIXEL, BOX_WIDTH_PIXEL, BOX_WIDTH_PIXEL);
-    }
-  }
-  pop();
-}
 
 /**
  * is called whenever a key is pressed.
  * listens for <- and -> and moves the active piece
  */
-function keyPressed() {
+window.keyPressed = function() {
   if (keyCode === LEFT_ARROW) {
     movePiece(game.activePiece, -1, 0);
   
