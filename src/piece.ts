@@ -56,6 +56,9 @@ class BlockPiece extends Piece {
     }
 
     getOcupiedFields(): Point[] {
+        //   0 1
+        // 0 x x
+        // 1 x x
         return [
             this.pos,
             this.pos.cloneRelative(1, 0),
@@ -75,6 +78,10 @@ class StreightPiece extends Piece {
         switch (this.orientation) {
             case Orientation.Up:
             case Orientation.Down:
+                // x
+                // x
+                // x
+                // x
                 return [
                     this.pos,
                     this.pos.cloneRelative(0, 1),
@@ -82,13 +89,13 @@ class StreightPiece extends Piece {
                     this.pos.cloneRelative(0, 3),
                 ];
             default:
+                // x x x x 
                 return [
                     this.pos,
                     this.pos.cloneRelative(1, 0),
                     this.pos.cloneRelative(2, 0),
                     this.pos.cloneRelative(3, 0),
                 ];
-                break;
         }
     }
 }
@@ -103,6 +110,8 @@ class ZPiece extends Piece {
         switch (this.orientation) {
             case Orientation.Up:
             case Orientation.Down:
+                // x x
+                //   x x
                 return [
                     this.pos,
                     this.pos.cloneRelative(1, 0),
@@ -110,6 +119,9 @@ class ZPiece extends Piece {
                     this.pos.cloneRelative(2, 1),
                 ];
             default:
+                //   x
+                // x x
+                // x
                 return [
                     this.pos.cloneRelative(1, 0),
                     this.pos.cloneRelative(1, 1),
@@ -128,9 +140,9 @@ class LPiece extends Piece {
     getOcupiedFields() {
         switch (this.orientation) {
             case Orientation.Up:
-                // o
-                // o
-                // o o
+                // x
+                // x
+                // x x
                 return [
                     this.pos,
                     this.pos.cloneRelative(0, 1),
@@ -138,8 +150,8 @@ class LPiece extends Piece {
                     this.pos.cloneRelative(1, 2),
                 ];
             case Orientation.Left:
-                //     0
-                // o o o
+                //     x
+                // x x x
                 return [
                     this.pos.cloneRelative(0, 1),
                     this.pos.cloneRelative(1, 1),
@@ -147,9 +159,9 @@ class LPiece extends Piece {
                     this.pos.cloneRelative(2, 0),
                 ];
             case Orientation.Down:
-                // 0 0
-                //   o
-                //   0
+                // x x
+                //   x
+                //   x
                 return [
                     this.pos,
                     this.pos.cloneRelative(1, 0),
@@ -157,15 +169,14 @@ class LPiece extends Piece {
                     this.pos.cloneRelative(1, 2),
                 ];
             default:
-                // 0 0 0
-                // 0
+                // x x x
+                // x
                 return [
                     this.pos,
                     this.pos.cloneRelative(1, 0),
                     this.pos.cloneRelative(2, 0),
                     this.pos.cloneRelative(0, 1),
                 ];
-
         }
     }
 }

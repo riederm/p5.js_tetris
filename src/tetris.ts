@@ -1,6 +1,5 @@
 
 let game : GameField;
-let preview: GameField;
 
 /**
  * Entry-Method for the game -> this is called by the p5.js framework
@@ -9,7 +8,6 @@ let preview: GameField;
 function setup () {
   createCanvas(640, 800);
   game = new GameField(10, 25, new Point(5,0));
-  preview = new GameField(5, 5, new Point(2,0));
 
 }
 
@@ -27,11 +25,6 @@ function draw() {
   // draw the board
   push();
   game.draw();
-  pop();
-
-  push();
-    translate(300, 0);
-    preview.draw();
   pop();
 }
 

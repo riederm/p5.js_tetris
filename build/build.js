@@ -69,10 +69,10 @@ var GameField = (function () {
         this.placePiece(this.activePiece);
     };
     GameField.prototype.deletePiece = function (piece) {
-        this.doPlacePiece(piece.getOcupiedFields(), Box.EMPTY);
+        this.fillAllFields(piece.getOcupiedFields(), Box.EMPTY);
     };
     GameField.prototype.placePiece = function (piece) {
-        this.doPlacePiece(piece.getOcupiedFields(), piece.getColor());
+        this.fillAllFields(piece.getOcupiedFields(), piece.getColor());
     };
     GameField.prototype.draw = function () {
         push();
@@ -106,8 +106,8 @@ var GameField = (function () {
         }
         else {
             this.placePiece(this.activePiece);
+            return true;
         }
-        return true;
     };
     GameField.prototype.turn = function () {
         this.deletePiece(this.activePiece);
@@ -140,7 +140,7 @@ var GameField = (function () {
         }
         return new Border();
     };
-    GameField.prototype.doPlacePiece = function (fields, color) {
+    GameField.prototype.fillAllFields = function (fields, color) {
         for (var _i = 0, fields_2 = fields; _i < fields_2.length; _i++) {
             var p = fields_2[_i];
             var f = this.getField(p);
@@ -227,7 +227,6 @@ var StreightPiece = (function (_super) {
                     this.pos.cloneRelative(2, 0),
                     this.pos.cloneRelative(3, 0),
                 ];
-                break;
         }
     };
     return StreightPiece;
@@ -314,21 +313,15 @@ var Point = (function () {
     return Point;
 }());
 var game;
-var preview;
 function setup() {
     createCanvas(640, 800);
     game = new GameField(10, 25, new Point(5, 0));
-    preview = new GameField(5, 5, new Point(2, 0));
 }
 function draw() {
     var now = Date.now();
     game.tick();
     push();
     game.draw();
-    pop();
-    push();
-    translate(300, 0);
-    preview.draw();
     pop();
 }
 function keyPressed() {
