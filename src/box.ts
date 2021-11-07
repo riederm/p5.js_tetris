@@ -2,7 +2,7 @@ const BOX_WIDTH_PIXEL = 25;
 
 
 
-class Box {
+class Field {
     public static EMPTY : string = 'white';
 
     private pos: Point;
@@ -17,11 +17,11 @@ class Box {
     }
 
     public isFull(): boolean {
-        return this.color !== Box.EMPTY;
+        return this.color !== Field.EMPTY;
     }
 
     public clear() {
-        this.color = Box.EMPTY;
+        this.color = Field.EMPTY;
     }
 
     public draw() {
@@ -31,7 +31,7 @@ class Box {
 }
 
 
-class Border extends Box {
+class BorderField extends Field {
     constructor() {
         super(null);
     }

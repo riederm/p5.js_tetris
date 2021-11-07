@@ -12,68 +12,121 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 var BOX_WIDTH_PIXEL = 25;
-var Box = (function () {
-    function Box(p) {
+var Field = (function () {
+    function Field(p) {
         this.color = 'white';
         this.pos = p;
     }
-    Box.prototype.fill = function (color) {
+    Field.prototype.fill = function (color) {
         this.color = color;
     };
-    Box.prototype.isFull = function () {
-        return this.color !== Box.EMPTY;
+    Field.prototype.isFull = function () {
+        return this.color !== Field.EMPTY;
     };
-    Box.prototype.clear = function () {
-        this.color = Box.EMPTY;
+    Field.prototype.clear = function () {
+        this.color = Field.EMPTY;
     };
-    Box.prototype.draw = function () {
+    Field.prototype.draw = function () {
         fill(this.color);
         rect(this.pos.getX() * BOX_WIDTH_PIXEL, this.pos.getY() * BOX_WIDTH_PIXEL, BOX_WIDTH_PIXEL, BOX_WIDTH_PIXEL);
     };
-    Box.EMPTY = 'white';
-    return Box;
+    Field.EMPTY = 'white';
+    return Field;
 }());
-var Border = (function (_super) {
-    __extends(Border, _super);
-    function Border() {
+var BorderField = (function (_super) {
+    __extends(BorderField, _super);
+    function BorderField() {
         return _super.call(this, null) || this;
     }
-    Border.prototype.isFull = function () {
+    BorderField.prototype.isFull = function () {
         return true;
     };
-    Border.prototype.draw = function () {
+    BorderField.prototype.draw = function () {
     };
-    return Border;
-}(Box));
-var GameField = (function () {
-    function GameField(width, height, posOfNewPiece) {
+    return BorderField;
+}(Field));
+var Game = (function () {
+    function Game(width, height, posOfNewPiece) {
         this.lastTick = 0;
+        this.field = new GameField(width, height);
+        this.newPiecePos = posOfNewPiece;
+        this.placeNewActivePiece();
+        this.lastTick = Date.now();
+    }
+    Game.prototype.getLastTick = function () {
+        return this.lastTick;
+    };
+    Game.prototype.placeNewActivePiece = function () {
+        this.activePiece = Piece.createRandomPiece(this.newPiecePos);
+        this.placePiece(this.activePiece);
+    };
+    Game.prototype.deletePiece = function (piece) {
+        this.field.fillAllFields(piece.getOcupiedFields(), Field.EMPTY);
+    };
+    Game.prototype.placePiece = function (piece) {
+        this.field.fillAllFields(piece.getOcupiedFields(), piece.getColor());
+    };
+    Game.prototype.tick = function () {
+        var now = Date.now();
+        if (now - this.lastTick > 250) {
+            if (!this.move(0, 1)) {
+                this.placeNewActivePiece();
+            }
+            this.lastTick = Date.now();
+        }
+        this.field.draw();
+    };
+    Game.prototype.move = function (deltaX, deltaY) {
+        this.deletePiece(this.activePiece);
+        this.activePiece.move(deltaX, deltaY);
+        if (this.hasConflict(this.activePiece)) {
+            this.activePiece.move(-deltaX, -deltaY);
+            this.placePiece(this.activePiece);
+            return false;
+        }
+        else {
+            this.placePiece(this.activePiece);
+            return true;
+        }
+    };
+    Game.prototype.turn = function () {
+        this.deletePiece(this.activePiece);
+        this.activePiece.turnUp();
+        if (this.hasConflict(this.activePiece)) {
+            this.activePiece.turnDown();
+        }
+        this.placePiece(this.activePiece);
+    };
+    Game.prototype.down = function () {
+        while (this.move(0, 1)) {
+        }
+        this.placeNewActivePiece();
+    };
+    Game.prototype.hasConflict = function (piece) {
+        var fields = piece.getOcupiedFields();
+        for (var _i = 0, fields_1 = fields; _i < fields_1.length; _i++) {
+            var f = fields_1[_i];
+            var field = this.field.getField(f);
+            if (field.isFull()) {
+                return true;
+            }
+        }
+        return false;
+    };
+    return Game;
+}());
+var GameField = (function () {
+    function GameField(width, height) {
         this.fieldWidth = width;
         this.fieldHeight = height;
-        this.newPiecePos = posOfNewPiece;
         this.field = [];
         for (var x = 0; x < this.fieldWidth; x++) {
             this.field[x] = [];
             for (var y = 0; y < this.fieldHeight; y++) {
-                this.field[x][y] = new Box(new Point(x, y));
+                this.field[x][y] = new Field(new Point(x, y));
             }
         }
-        this.placeNewActivePiece();
-        this.lastTick = Date.now();
     }
-    GameField.prototype.getLastTick = function () {
-        return this.lastTick;
-    };
-    GameField.prototype.placeNewActivePiece = function () {
-        this.activePiece = Piece.createRandomPiece(this.newPiecePos);
-        this.placePiece(this.activePiece);
-    };
-    GameField.prototype.deletePiece = function (piece) {
-        this.fillAllFields(piece.getOcupiedFields(), Box.EMPTY);
-    };
-    GameField.prototype.placePiece = function (piece) {
-        this.fillAllFields(piece.getOcupiedFields(), piece.getColor());
-    };
     GameField.prototype.draw = function () {
         push();
         translate(50, 50);
@@ -87,58 +140,12 @@ var GameField = (function () {
         }
         pop();
     };
-    GameField.prototype.tick = function () {
-        var now = Date.now();
-        if (now - this.lastTick > 250) {
-            if (!this.move(0, 1)) {
-                this.placeNewActivePiece();
-            }
-            this.lastTick = Date.now();
-        }
-    };
-    GameField.prototype.move = function (deltaX, deltaY) {
-        this.deletePiece(this.activePiece);
-        this.activePiece.move(deltaX, deltaY);
-        if (this.hasConflict(this.activePiece)) {
-            this.activePiece.move(-deltaX, -deltaY);
-            this.placePiece(this.activePiece);
-            return false;
-        }
-        else {
-            this.placePiece(this.activePiece);
-            return true;
-        }
-    };
-    GameField.prototype.turn = function () {
-        this.deletePiece(this.activePiece);
-        this.activePiece.turnUp();
-        if (this.hasConflict(this.activePiece)) {
-            this.activePiece.turnDown();
-        }
-        this.placePiece(this.activePiece);
-    };
-    GameField.prototype.down = function () {
-        while (this.move(0, 1)) {
-        }
-        this.placeNewActivePiece();
-    };
-    GameField.prototype.hasConflict = function (piece) {
-        var fields = piece.getOcupiedFields();
-        for (var _i = 0, fields_1 = fields; _i < fields_1.length; _i++) {
-            var f = fields_1[_i];
-            var field = this.getField(f);
-            if (field.isFull()) {
-                return true;
-            }
-        }
-        return false;
-    };
     GameField.prototype.getField = function (pos) {
         if (pos.getX() >= 0 && pos.getX() < this.fieldWidth
             && pos.getY() >= 0 && pos.getY() < this.fieldHeight) {
             return this.field[pos.getX()][pos.getY()];
         }
-        return new Border();
+        return new BorderField();
     };
     GameField.prototype.fillAllFields = function (fields, color) {
         for (var _i = 0, fields_2 = fields; _i < fields_2.length; _i++) {
@@ -315,14 +322,10 @@ var Point = (function () {
 var game;
 function setup() {
     createCanvas(640, 800);
-    game = new GameField(10, 25, new Point(5, 0));
+    game = new Game(10, 25, new Point(5, 0));
 }
 function draw() {
-    var now = Date.now();
     game.tick();
-    push();
-    game.draw();
-    pop();
 }
 function keyPressed() {
     if (keyCode === LEFT_ARROW) {
