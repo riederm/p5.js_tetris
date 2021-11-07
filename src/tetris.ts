@@ -1,22 +1,16 @@
-import { Game } from "./game.js"
-import { PIECE_TYPE } from "./piece.js";
 
-const game = new Game();
-p5 = {};
+let game : GameField;
+let preview: GameField;
 
 /**
  * Entry-Method for the game -> this is called by the p5.js framework
  * once in the beginning
  */
-window.setup = function () {
+function setup () {
   createCanvas(640, 800);
-  p5.rect = rect;
-  p5.fill = fill;
-  p5.push = push;
-  p5.pop = pop;
-  p5.stroke = stroke;
-  p5.strokeWeight = strokeWeight;
-  p5.translate = translate;
+  game = new GameField(10, 25, new Point(5,0));
+  preview = new GameField(5, 5, new Point(2,0));
+
 }
 
 /**
@@ -27,25 +21,25 @@ window.setup = function () {
  * 
  * this method is called continously to draw 60 fps
  */
-window.draw = function () {
+function draw() {
   let now = Date.now();
-  //shall we tick?
-  if (now - game.lastTick > 500) {
-    game.tick();
-
-    //remember last tick-frame 
-    game.lastTick = now;
-  }
-
+  game.tick();
   // draw the board
-  game.draw(p5);
+  push();
+  game.draw();
+  pop();
+
+  push();
+    translate(300, 0);
+    preview.draw();
+  pop();
 }
 
 /**
  * is called whenever a key is pressed.
  * listens for <- and -> and moves the active piece
  */
-window.keyPressed = function () {
+function keyPressed() {
   if (keyCode === LEFT_ARROW) {
     game.move(-1, 0);
 
