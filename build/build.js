@@ -163,7 +163,7 @@ var Orientation;
     Orientation[Orientation["Down"] = 2] = "Down";
     Orientation[Orientation["Right"] = 3] = "Right";
 })(Orientation || (Orientation = {}));
-var COLORS = ['red', 'green', 'yellow', 'blue', 'orange', 'pink', 'magenta'];
+var COLORS = ['orangered', 'greenyellow', 'gold', 'deepskyblue', 'turquoise', 'violet'];
 var Piece = (function () {
     function Piece(p, c) {
         this.orientation = Orientation.Up;

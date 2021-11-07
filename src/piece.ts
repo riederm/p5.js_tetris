@@ -6,7 +6,7 @@ enum Orientation {
     Right,
 }
 
-const COLORS: string[] = ['red', 'green', 'yellow', 'blue', 'orange', 'pink', 'magenta'];
+const COLORS: string[] = ['orangered', 'greenyellow', 'gold', 'deepskyblue', 'turquoise', 'violet'];
 
 abstract class Piece {
 
