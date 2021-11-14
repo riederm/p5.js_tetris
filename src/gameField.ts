@@ -10,7 +10,7 @@ class GameField {
     private fieldWidth : number;
     private fieldHeight : number;
 
-    constructor(width: number, height: number) {
+    public constructor(width: number, height: number) {
         this.fieldWidth = width;
         this.fieldHeight = height;
         this.field = [];
@@ -58,7 +58,7 @@ class GameField {
      * @param fields coordiantes of the fields to fill
      * @param color the color
      */
-    public fillAllFields(fields: Point[], color: string) {
+    public fillFields(fields: Point[], color: string) {
         for (const p of fields) {
             let f = this.getField(p);
             f.fill(color);

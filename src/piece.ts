@@ -6,6 +6,9 @@ enum Orientation {
     Right,
 }
 
+/**
+ * all supported colors
+ */
 const COLORS: string[] = ['orangered', 'greenyellow', 'gold', 'deepskyblue', 'turquoise', 'violet'];
 
 abstract class Piece {
@@ -14,30 +17,49 @@ abstract class Piece {
     protected orientation: Orientation = Orientation.Up;
     private color: string;
 
-    constructor(p: Point, c: string) {
+    public constructor(p: Point, c: string) {
         this.pos = p;
         this.color = c;
     }
 
-    public getColor(): string {
+    public getColor() : string {
         return this.color;
     }
 
-    public getOcupiedFields(): Point[] {
-        return [];
-    }
+    /**
+     * returns the absolute coordinates of fields blocked by this
+     * piece at it's current location and it's current orientation
+     */
+    public abstract getBlockedFields(): Point[]; 
 
+    /**
+     * moves this piece by deltaX and deltaY fields
+    */
     public move(deltaX: number, deltaY: number) {
         this.pos = new Point(this.pos.getX() + deltaX, this.pos.getY() + deltaY);
     }
 
-    turnDown() {
+    /**
+     * turns the piece clockwise.
+     * @see getBlockedFields will return different fields after this call 
+     */
+    public turnClockwise() {
         this.orientation = (this.orientation - 1) % 4;
     }
-    turnUp() {
+
+    /**
+     * turns the piece counter clockwise.
+     * @see getBlockedFields will return different fields after this call 
+     */
+    public turnCounterClockwise() {
         this.orientation = (this.orientation + 1) % 4;
     }
 
+    /**
+     * creates a random piece
+     * @param pos the initial position of the new piece
+     * @returns the new piece 
+     */
     public static createRandomPiece(pos: Point): Piece {
         let c = random(COLORS);
         let pieces = [
@@ -55,15 +77,15 @@ class BlockPiece extends Piece {
         super(p, c)
     }
 
-    getOcupiedFields(): Point[] {
+    getBlockedFields(): Point[] {
         //   0 1
         // 0 x x
         // 1 x x
         return [
             this.pos,
-            this.pos.cloneRelative(1, 0),
-            this.pos.cloneRelative(0, 1),
-            this.pos.cloneRelative(1, 1),
+            this.pos.getNeighbour(1, 0),
+            this.pos.getNeighbour(0, 1),
+            this.pos.getNeighbour(1, 1),
         ];
     }
 }
@@ -74,7 +96,7 @@ class StreightPiece extends Piece {
         super(p, c)
     }
 
-    getOcupiedFields() {
+    getBlockedFields() {
         switch (this.orientation) {
             case Orientation.Up:
             case Orientation.Down:
@@ -84,17 +106,17 @@ class StreightPiece extends Piece {
                 // x
                 return [
                     this.pos,
-                    this.pos.cloneRelative(0, 1),
-                    this.pos.cloneRelative(0, 2),
-                    this.pos.cloneRelative(0, 3),
+                    this.pos.getNeighbour(0, 1),
+                    this.pos.getNeighbour(0, 2),
+                    this.pos.getNeighbour(0, 3),
                 ];
             default:
                 // x x x x 
                 return [
                     this.pos,
-                    this.pos.cloneRelative(1, 0),
-                    this.pos.cloneRelative(2, 0),
-                    this.pos.cloneRelative(3, 0),
+                    this.pos.getNeighbour(1, 0),
+                    this.pos.getNeighbour(2, 0),
+                    this.pos.getNeighbour(3, 0),
                 ];
         }
     }
@@ -106,7 +128,7 @@ class ZPiece extends Piece {
         super(p, c)
     }
 
-    getOcupiedFields() {
+    getBlockedFields() {
         switch (this.orientation) {
             case Orientation.Up:
             case Orientation.Down:
@@ -114,19 +136,19 @@ class ZPiece extends Piece {
                 //   x x
                 return [
                     this.pos,
-                    this.pos.cloneRelative(1, 0),
-                    this.pos.cloneRelative(1, 1),
-                    this.pos.cloneRelative(2, 1),
+                    this.pos.getNeighbour(1, 0),
+                    this.pos.getNeighbour(1, 1),
+                    this.pos.getNeighbour(2, 1),
                 ];
             default:
                 //   x
                 // x x
                 // x
                 return [
-                    this.pos.cloneRelative(1, 0),
-                    this.pos.cloneRelative(1, 1),
-                    this.pos.cloneRelative(0, 1),
-                    this.pos.cloneRelative(0, 2),
+                    this.pos.getNeighbour(1, 0),
+                    this.pos.getNeighbour(1, 1),
+                    this.pos.getNeighbour(0, 1),
+                    this.pos.getNeighbour(0, 2),
                 ];
         }
     }
@@ -137,7 +159,7 @@ class LPiece extends Piece {
     constructor(p: Point, c: string) {
         super(p, c)
     }
-    getOcupiedFields() {
+    getBlockedFields() {
         switch (this.orientation) {
             case Orientation.Up:
                 // x
@@ -145,18 +167,18 @@ class LPiece extends Piece {
                 // x x
                 return [
                     this.pos,
-                    this.pos.cloneRelative(0, 1),
-                    this.pos.cloneRelative(0, 2),
-                    this.pos.cloneRelative(1, 2),
+                    this.pos.getNeighbour(0, 1),
+                    this.pos.getNeighbour(0, 2),
+                    this.pos.getNeighbour(1, 2),
                 ];
             case Orientation.Left:
                 //     x
                 // x x x
                 return [
-                    this.pos.cloneRelative(0, 1),
-                    this.pos.cloneRelative(1, 1),
-                    this.pos.cloneRelative(2, 1),
-                    this.pos.cloneRelative(2, 0),
+                    this.pos.getNeighbour(0, 1),
+                    this.pos.getNeighbour(1, 1),
+                    this.pos.getNeighbour(2, 1),
+                    this.pos.getNeighbour(2, 0),
                 ];
             case Orientation.Down:
                 // x x
@@ -164,18 +186,18 @@ class LPiece extends Piece {
                 //   x
                 return [
                     this.pos,
-                    this.pos.cloneRelative(1, 0),
-                    this.pos.cloneRelative(1, 1),
-                    this.pos.cloneRelative(1, 2),
+                    this.pos.getNeighbour(1, 0),
+                    this.pos.getNeighbour(1, 1),
+                    this.pos.getNeighbour(1, 2),
                 ];
             default:
                 // x x x
                 // x
                 return [
                     this.pos,
-                    this.pos.cloneRelative(1, 0),
-                    this.pos.cloneRelative(2, 0),
-                    this.pos.cloneRelative(0, 1),
+                    this.pos.getNeighbour(1, 0),
+                    this.pos.getNeighbour(2, 0),
+                    this.pos.getNeighbour(0, 1),
                 ];
         }
     }

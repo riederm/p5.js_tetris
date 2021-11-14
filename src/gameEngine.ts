@@ -1,9 +1,12 @@
 
+enum Key {
+    Up, Down, Left, Right
+}
 
-class Game {
+
+class GameEngine {
 
     private field: GameField;
-
     /**
      * the time of the last game-tick
      */
@@ -13,10 +16,12 @@ class Game {
      */
     private activePiece : Piece;
 
-
+    /**
+     * the positoin where a new piece appears
+     */
     private newPiecePos: Point;
 
-    constructor(width: number, height: number, posOfNewPiece: Point) {
+    public constructor(width: number, height: number, posOfNewPiece: Point) {
         this.field = new GameField(width, height);
         this.newPiecePos = posOfNewPiece;
         this.placeNewActivePiece();
@@ -24,16 +29,9 @@ class Game {
     }
 
     /**
-     * @returns the time of the last game-tick
-     */
-    getLastTick() {
-        return this.lastTick;
-    }
-
-    /**
      * aquires a new random piece to play
      */
-    public placeNewActivePiece() {
+    private placeNewActivePiece() {
         this.activePiece = Piece.createRandomPiece(this.newPiecePos)
         this.placePiece(this.activePiece);
     }
@@ -43,8 +41,8 @@ class Game {
      * this clears all the item's fields to EMPTY
      * @param piece 
      */
-    public deletePiece(piece: Piece) {
-        this.field.fillAllFields(piece.getOcupiedFields(), Field.EMPTY);
+    private deletePiece(piece: Piece) {
+        this.field.fillFields(piece.getBlockedFields(), Field.EMPTY);
     }
 
     /**
@@ -53,8 +51,8 @@ class Game {
      * the item's color
      * @param piece 
      */
-    public placePiece(piece: Piece) {
-        this.field.fillAllFields(piece.getOcupiedFields(), piece.getColor());
+    private placePiece(piece: Piece) {
+        this.field.fillFields(piece.getBlockedFields(), piece.getColor());
     }
 
     /**
@@ -62,11 +60,11 @@ class Game {
      * a "turn" or "move". This means that a the active piece
      * moves and/or a new piece is introduced into the game
      */
-    public tick() {
+    public gameTick() {
         //delete the current piece from the board
         let now = Date.now();
         if (now - this.lastTick > 250) {
-            if (!this.move(0, 1)) {
+            if (!this.moveIfPossible(0, 1)) {
                 this.placeNewActivePiece();
             }
             this.lastTick = Date.now();
@@ -75,13 +73,33 @@ class Game {
         this.field.draw();
     }
 
+    public keyPressed(key: Key) {
+        switch (key) {
+            case Key.Up:
+                    //turn the active piece
+                    this.turnIfPossible();                
+                break;
+            case Key.Down:
+                    this.down();
+                break;
+            case Key.Left:
+                    this.moveIfPossible(-1, 0);
+                break;
+            case Key.Right:
+                    this.moveIfPossible(1, 0);
+                break;
+            default:
+                console.error("unknown key: ", key);
+        }
+    }
+
     /**
      * tries to move the piece
      * @param deltaX the movement on the x-axis
      * @param deltaY the movement on the y-axis
      * @returns true if the piece was moved, false if it could not be moved
      */
-    public move(deltaX: number, deltaY: number) {
+    private moveIfPossible(deltaX: number, deltaY: number) {
         // remove piece from game field
         this.deletePiece(this.activePiece);
         // move the piece
@@ -107,16 +125,16 @@ class Game {
     /**
      * tries to turn the piece
      */
-    public turn() {
+    private turnIfPossible() {
         // remove the piece from the board
         this.deletePiece(this.activePiece);
         // turn the piece
-        this.activePiece.turnUp();
+        this.activePiece.turnCounterClockwise();
         // see if this would cause a conflict
         if (this.hasConflict(this.activePiece)) {
             // outch - conflict
             // turn it back to its original position
-            this.activePiece.turnDown();
+            this.activePiece.turnClockwise();
         }
         // place piece back onto the board
         this.placePiece(this.activePiece);
@@ -125,9 +143,9 @@ class Game {
     /**
      * moves the piece down until it "hits the ground"
      */
-    public down() {
+    private down() {
         // move down until we can no longer move
-        while(this.move(0, 1)){
+        while(this.moveIfPossible(0, 1)){
         }
         // get a new piece
         this.placeNewActivePiece();
@@ -139,10 +157,10 @@ class Game {
      * @returns true if the given piece causes a conflict, otherwhise false
      */
     private hasConflict(piece: Piece): boolean {
-        let fields = piece.getOcupiedFields();
+        let fields = piece.getBlockedFields();
         for (const f of fields) {
             let field = this.field.getField(f);
-            if (field.isFull()) {
+            if (field.isBlocked()) {
                 return true;
             }
         }

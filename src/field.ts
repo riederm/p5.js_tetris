@@ -1,14 +1,12 @@
 const BOX_WIDTH_PIXEL = 25;
 
-
-
 class Field {
     public static EMPTY : string = 'white';
 
     private pos: Point;
     private color: string = 'white';
 
-    constructor(p: Point) {
+    public constructor(p: Point) {
         this.pos = p;
     }
 
@@ -16,7 +14,7 @@ class Field {
         this.color = color;
     }
 
-    public isFull(): boolean {
+    public isBlocked(): boolean {
         return this.color !== Field.EMPTY;
     }
 
@@ -36,7 +34,7 @@ class BorderField extends Field {
         super(null);
     }
 
-    public isFull() : boolean{
+    public isBlocked() : boolean{
         return true; //this is always full
     }
 
