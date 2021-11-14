@@ -6,6 +6,41 @@ enum Orientation {
     Right,
 }
 
+class PieceFactory {
+
+    constructor() {
+        this.nextC = random(COLORS);
+        this.next = random([0,1,2,3]);
+    }
+
+    private next: number;
+    private nextC : string;
+    public createNewPiece(pos: Point) : Piece {
+        let nextPiece = this.buildPiece(pos);
+        this.nextC = random(COLORS);
+        this.next = random([0,1,2,3]);
+        return nextPiece;
+    }
+
+    public peekNext(pos:Point): Piece {
+        return this.buildPiece(pos);
+    }
+
+    private buildPiece(pos: Point){
+        switch (this.next) {
+            case 0:
+                return new BlockPiece(pos, this.nextC);
+            case 1:
+                return new StreightPiece(pos, this.nextC);
+            case 2:
+                return new ZPiece(pos, this.nextC);
+            case 3:
+            default:
+                return new LPiece(pos, this.nextC);
+        }
+    }
+}
+
 /**
  * all supported colors
  */
@@ -55,21 +90,7 @@ abstract class Piece {
         this.orientation = (this.orientation + 1) % 4;
     }
 
-    /**
-     * creates a random piece
-     * @param pos the initial position of the new piece
-     * @returns the new piece 
-     */
-    public static createRandomPiece(pos: Point): Piece {
-        let c = random(COLORS);
-        let pieces = [
-            new BlockPiece(pos, c),
-            new StreightPiece(pos, c),
-            new ZPiece(pos, c),
-            new LPiece(pos, c),
-        ]
-        return random(pieces);
-    }
+    
 }
 
 class BlockPiece extends Piece {

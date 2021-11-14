@@ -53,15 +53,16 @@ var Key;
     Key[Key["Right"] = 3] = "Right";
 })(Key || (Key = {}));
 var GameEngine = (function () {
-    function GameEngine(width, height, posOfNewPiece) {
+    function GameEngine(width, height, posOfNewPiece, pieceFactory) {
         this.lastTick = 0;
         this.field = new GameField(width, height);
         this.newPiecePos = posOfNewPiece;
-        this.placeNewActivePiece();
         this.lastTick = Date.now();
+        this.pieceFactory = pieceFactory;
+        this.placeNewActivePiece();
     }
     GameEngine.prototype.placeNewActivePiece = function () {
-        this.activePiece = Piece.createRandomPiece(this.newPiecePos);
+        this.activePiece = this.pieceFactory.createNewPiece(this.newPiecePos);
         this.placePiece(this.activePiece);
     };
     GameEngine.prototype.deletePiece = function (piece) {
@@ -137,6 +138,18 @@ var GameEngine = (function () {
     };
     return GameEngine;
 }());
+var PreviewEngine = (function (_super) {
+    __extends(PreviewEngine, _super);
+    function PreviewEngine(width, height, posOfNewPiece, pieceFactory) {
+        return _super.call(this, width, height, posOfNewPiece, pieceFactory) || this;
+    }
+    PreviewEngine.prototype.gameTick = function () {
+        this.field.clearAll();
+        this.placePiece(this.pieceFactory.peekNext(this.newPiecePos));
+        this.field.draw();
+    };
+    return PreviewEngine;
+}(GameEngine));
 var GameField = (function () {
     function GameField(width, height) {
         this.fieldWidth = width;
@@ -176,6 +189,14 @@ var GameField = (function () {
             f.fill(color);
         }
     };
+    GameField.prototype.clearAll = function () {
+        for (var x = 0; x < this.fieldWidth; x++) {
+            for (var y = 0; y < this.fieldHeight; y++) {
+                var field = this.field[x][y];
+                field.clear();
+            }
+        }
+    };
     return GameField;
 }());
 var Orientation;
@@ -185,6 +206,35 @@ var Orientation;
     Orientation[Orientation["Down"] = 2] = "Down";
     Orientation[Orientation["Right"] = 3] = "Right";
 })(Orientation || (Orientation = {}));
+var PieceFactory = (function () {
+    function PieceFactory() {
+        this.nextC = random(COLORS);
+        this.next = random([0, 1, 2, 3]);
+    }
+    PieceFactory.prototype.createNewPiece = function (pos) {
+        var nextPiece = this.buildPiece(pos);
+        this.nextC = random(COLORS);
+        this.next = random([0, 1, 2, 3]);
+        return nextPiece;
+    };
+    PieceFactory.prototype.peekNext = function (pos) {
+        return this.buildPiece(pos);
+    };
+    PieceFactory.prototype.buildPiece = function (pos) {
+        switch (this.next) {
+            case 0:
+                return new BlockPiece(pos, this.nextC);
+            case 1:
+                return new StreightPiece(pos, this.nextC);
+            case 2:
+                return new ZPiece(pos, this.nextC);
+            case 3:
+            default:
+                return new LPiece(pos, this.nextC);
+        }
+    };
+    return PieceFactory;
+}());
 var COLORS = ['orangered', 'greenyellow', 'gold', 'deepskyblue', 'turquoise', 'violet'];
 var Piece = (function () {
     function Piece(p, c) {
@@ -203,16 +253,6 @@ var Piece = (function () {
     };
     Piece.prototype.turnCounterClockwise = function () {
         this.orientation = (this.orientation + 1) % 4;
-    };
-    Piece.createRandomPiece = function (pos) {
-        var c = random(COLORS);
-        var pieces = [
-            new BlockPiece(pos, c),
-            new StreightPiece(pos, c),
-            new ZPiece(pos, c),
-            new LPiece(pos, c),
-        ];
-        return random(pieces);
     };
     return Piece;
 }());
@@ -339,12 +379,17 @@ var Point = (function () {
     return Point;
 }());
 var game;
+var preview;
 function setup() {
     createCanvas(640, 800);
-    game = new GameEngine(10, 25, new Point(5, 0));
+    var factory = new PieceFactory();
+    game = new GameEngine(10, 25, new Point(5, 0), factory);
+    preview = new PreviewEngine(5, 5, new Point(2, 0), factory);
 }
 function draw() {
     game.gameTick();
+    translate(300, 0);
+    preview.gameTick();
 }
 function keyPressed() {
     switch (keyCode) {

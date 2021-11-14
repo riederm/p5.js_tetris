@@ -1,6 +1,5 @@
 
 class GameField {
-
     /**
      * 2 dim array representing the game-field
      * a cell may contain a color from COLOR or EMPTY
@@ -64,5 +63,16 @@ class GameField {
             f.fill(color);
         }
     }
+
+    public clearAll() {
+        for (let x = 0; x < this.fieldWidth; x++) {
+            for (let y = 0; y < this.fieldHeight; y++) {
+                const field = this.field[x][y];
+                field.clear();
+            }
+        }
+    }
+
+
 
 }

@@ -6,7 +6,7 @@ enum Key {
 
 class GameEngine {
 
-    private field: GameField;
+    protected field: GameField;
     /**
      * the time of the last game-tick
      */
@@ -19,20 +19,23 @@ class GameEngine {
     /**
      * the positoin where a new piece appears
      */
-    private newPiecePos: Point;
+    protected newPiecePos: Point;
+    
+    protected pieceFactory: PieceFactory;
 
-    public constructor(width: number, height: number, posOfNewPiece: Point) {
+    public constructor(width: number, height: number, posOfNewPiece: Point, pieceFactory: PieceFactory) {
         this.field = new GameField(width, height);
         this.newPiecePos = posOfNewPiece;
-        this.placeNewActivePiece();
         this.lastTick = Date.now();
+        this.pieceFactory = pieceFactory;
+        this.placeNewActivePiece();
     }
 
     /**
      * aquires a new random piece to play
      */
     private placeNewActivePiece() {
-        this.activePiece = Piece.createRandomPiece(this.newPiecePos)
+        this.activePiece = this.pieceFactory.createNewPiece(this.newPiecePos);
         this.placePiece(this.activePiece);
     }
 
@@ -51,7 +54,7 @@ class GameEngine {
      * the item's color
      * @param piece 
      */
-    private placePiece(piece: Piece) {
+    protected placePiece(piece: Piece) {
         this.field.fillFields(piece.getBlockedFields(), piece.getColor());
     }
 
@@ -169,4 +172,17 @@ class GameEngine {
 
 
     
+}
+
+class PreviewEngine extends GameEngine {
+
+    public constructor(width: number, height: number, posOfNewPiece: Point, pieceFactory: PieceFactory) {
+        super(width, height, posOfNewPiece, pieceFactory);
+    }
+
+    public gameTick(){
+        this.field.clearAll();
+        this.placePiece(this.pieceFactory.peekNext(this.newPiecePos));
+        this.field.draw();
+    }
 }
