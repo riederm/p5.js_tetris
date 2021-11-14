@@ -101,39 +101,15 @@ var GameEngine = (function () {
     GameEngine.prototype.moveIfPossible = function (deltaX, deltaY) {
         this.deletePiece(this.activePiece);
         this.activePiece.move(deltaX, deltaY);
-        if (this.hasConflict(this.activePiece)) {
-            this.activePiece.move(-deltaX, -deltaY);
-            this.placePiece(this.activePiece);
-            return false;
-        }
-        else {
-            this.placePiece(this.activePiece);
-            return true;
-        }
+        this.placePiece(this.activePiece);
+        return true;
     };
     GameEngine.prototype.turnIfPossible = function () {
         this.deletePiece(this.activePiece);
         this.activePiece.turnCounterClockwise();
-        if (this.hasConflict(this.activePiece)) {
-            this.activePiece.turnClockwise();
-        }
         this.placePiece(this.activePiece);
     };
     GameEngine.prototype.down = function () {
-        while (this.moveIfPossible(0, 1)) {
-        }
-        this.placeNewActivePiece();
-    };
-    GameEngine.prototype.hasConflict = function (piece) {
-        var fields = piece.getBlockedFields();
-        for (var _i = 0, fields_1 = fields; _i < fields_1.length; _i++) {
-            var f = fields_1[_i];
-            var field = this.field.getField(f);
-            if (field.isBlocked()) {
-                return true;
-            }
-        }
-        return false;
     };
     return GameEngine;
 }());
@@ -163,15 +139,11 @@ var GameField = (function () {
         pop();
     };
     GameField.prototype.getField = function (pos) {
-        if (pos.getX() >= 0 && pos.getX() < this.fieldWidth
-            && pos.getY() >= 0 && pos.getY() < this.fieldHeight) {
-            return this.field[pos.getX()][pos.getY()];
-        }
-        return new BorderField();
+        return this.field[pos.getX()][pos.getY()];
     };
     GameField.prototype.fillFields = function (fields, color) {
-        for (var _i = 0, fields_2 = fields; _i < fields_2.length; _i++) {
-            var p = fields_2[_i];
+        for (var _i = 0, fields_1 = fields; _i < fields_1.length; _i++) {
+            var p = fields_1[_i];
             var f = this.getField(p);
             f.fill(color);
         }
@@ -195,6 +167,24 @@ var Piece = (function () {
     Piece.prototype.getColor = function () {
         return this.color;
     };
+    Piece.prototype.getBlockedFields = function () {
+        if (this.orientation == Orientation.Up || this.orientation == Orientation.Down) {
+            return [
+                this.pos,
+                this.pos.getNeighbour(0, 1),
+                this.pos.getNeighbour(0, 2),
+                this.pos.getNeighbour(0, 3),
+            ];
+        }
+        else {
+            return [
+                this.pos,
+                this.pos.getNeighbour(1, 0),
+                this.pos.getNeighbour(2, 0),
+                this.pos.getNeighbour(3, 0),
+            ];
+        }
+    };
     Piece.prototype.move = function (deltaX, deltaY) {
         this.pos = new Point(this.pos.getX() + deltaX, this.pos.getY() + deltaY);
     };
@@ -207,121 +197,12 @@ var Piece = (function () {
     Piece.createRandomPiece = function (pos) {
         var c = random(COLORS);
         var pieces = [
-            new BlockPiece(pos, c),
-            new StreightPiece(pos, c),
-            new ZPiece(pos, c),
-            new LPiece(pos, c),
+            new Piece(pos, c),
         ];
         return random(pieces);
     };
     return Piece;
 }());
-var BlockPiece = (function (_super) {
-    __extends(BlockPiece, _super);
-    function BlockPiece(p, c) {
-        return _super.call(this, p, c) || this;
-    }
-    BlockPiece.prototype.getBlockedFields = function () {
-        return [
-            this.pos,
-            this.pos.getNeighbour(1, 0),
-            this.pos.getNeighbour(0, 1),
-            this.pos.getNeighbour(1, 1),
-        ];
-    };
-    return BlockPiece;
-}(Piece));
-var StreightPiece = (function (_super) {
-    __extends(StreightPiece, _super);
-    function StreightPiece(p, c) {
-        return _super.call(this, p, c) || this;
-    }
-    StreightPiece.prototype.getBlockedFields = function () {
-        switch (this.orientation) {
-            case Orientation.Up:
-            case Orientation.Down:
-                return [
-                    this.pos,
-                    this.pos.getNeighbour(0, 1),
-                    this.pos.getNeighbour(0, 2),
-                    this.pos.getNeighbour(0, 3),
-                ];
-            default:
-                return [
-                    this.pos,
-                    this.pos.getNeighbour(1, 0),
-                    this.pos.getNeighbour(2, 0),
-                    this.pos.getNeighbour(3, 0),
-                ];
-        }
-    };
-    return StreightPiece;
-}(Piece));
-var ZPiece = (function (_super) {
-    __extends(ZPiece, _super);
-    function ZPiece(p, c) {
-        return _super.call(this, p, c) || this;
-    }
-    ZPiece.prototype.getBlockedFields = function () {
-        switch (this.orientation) {
-            case Orientation.Up:
-            case Orientation.Down:
-                return [
-                    this.pos,
-                    this.pos.getNeighbour(1, 0),
-                    this.pos.getNeighbour(1, 1),
-                    this.pos.getNeighbour(2, 1),
-                ];
-            default:
-                return [
-                    this.pos.getNeighbour(1, 0),
-                    this.pos.getNeighbour(1, 1),
-                    this.pos.getNeighbour(0, 1),
-                    this.pos.getNeighbour(0, 2),
-                ];
-        }
-    };
-    return ZPiece;
-}(Piece));
-var LPiece = (function (_super) {
-    __extends(LPiece, _super);
-    function LPiece(p, c) {
-        return _super.call(this, p, c) || this;
-    }
-    LPiece.prototype.getBlockedFields = function () {
-        switch (this.orientation) {
-            case Orientation.Up:
-                return [
-                    this.pos,
-                    this.pos.getNeighbour(0, 1),
-                    this.pos.getNeighbour(0, 2),
-                    this.pos.getNeighbour(1, 2),
-                ];
-            case Orientation.Left:
-                return [
-                    this.pos.getNeighbour(0, 1),
-                    this.pos.getNeighbour(1, 1),
-                    this.pos.getNeighbour(2, 1),
-                    this.pos.getNeighbour(2, 0),
-                ];
-            case Orientation.Down:
-                return [
-                    this.pos,
-                    this.pos.getNeighbour(1, 0),
-                    this.pos.getNeighbour(1, 1),
-                    this.pos.getNeighbour(1, 2),
-                ];
-            default:
-                return [
-                    this.pos,
-                    this.pos.getNeighbour(1, 0),
-                    this.pos.getNeighbour(2, 0),
-                    this.pos.getNeighbour(0, 1),
-                ];
-        }
-    };
-    return LPiece;
-}(Piece));
 var Point = (function () {
     function Point(x, y) {
         this.x = x;

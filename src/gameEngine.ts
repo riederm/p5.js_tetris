@@ -102,24 +102,15 @@ class GameEngine {
     private moveIfPossible(deltaX: number, deltaY: number) {
         // remove piece from game field
         this.deletePiece(this.activePiece);
+
+        // TODO see if move is possible
         // move the piece
         this.activePiece.move(deltaX, deltaY);
-        // see if this would cause a conflict
-        if (this.hasConflict(this.activePiece)){
-            // outch - conflict
-            //move piece back to where it was
-            this.activePiece.move(-deltaX, -deltaY);
-            // and place it back onto the board
-            this.placePiece(this.activePiece);
-            // we were not able to move the piece
-            return false;
-        }else{
-            // no conflict
-            // so lets place the piece at the new position
-            this.placePiece(this.activePiece);
-            // yes we were able to move the piece
-            return true;
-        }
+
+        // block new fields
+        this.placePiece(this.activePiece);
+
+        return true
     }
 
     /**
@@ -130,12 +121,9 @@ class GameEngine {
         this.deletePiece(this.activePiece);
         // turn the piece
         this.activePiece.turnCounterClockwise();
-        // see if this would cause a conflict
-        if (this.hasConflict(this.activePiece)) {
-            // outch - conflict
-            // turn it back to its original position
-            this.activePiece.turnClockwise();
-        }
+
+        //TODO see if turn is possible
+
         // place piece back onto the board
         this.placePiece(this.activePiece);
     }
@@ -144,29 +132,7 @@ class GameEngine {
      * moves the piece down until it "hits the ground"
      */
     private down() {
-        // move down until we can no longer move
-        while(this.moveIfPossible(0, 1)){
-        }
-        // get a new piece
-        this.placeNewActivePiece();
+        //TODO implement me
     }
-
-    /**
-     * checks whether the given piece causes a conflict with the current state of the board
-     * @param piece 
-     * @returns true if the given piece causes a conflict, otherwhise false
-     */
-    private hasConflict(piece: Piece): boolean {
-        let fields = piece.getBlockedFields();
-        for (const f of fields) {
-            let field = this.field.getField(f);
-            if (field.isBlocked()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
     
 }
