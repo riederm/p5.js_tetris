@@ -1,16 +1,3 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 var BOX_WIDTH_PIXEL = 25;
 var Field = (function () {
     function Field(p) {
@@ -33,18 +20,6 @@ var Field = (function () {
     Field.EMPTY = 'white';
     return Field;
 }());
-var BorderField = (function (_super) {
-    __extends(BorderField, _super);
-    function BorderField() {
-        return _super.call(this, null) || this;
-    }
-    BorderField.prototype.isBlocked = function () {
-        return true;
-    };
-    BorderField.prototype.draw = function () {
-    };
-    return BorderField;
-}(Field));
 var Key;
 (function (Key) {
     Key[Key["Up"] = 0] = "Up";
@@ -53,16 +28,15 @@ var Key;
     Key[Key["Right"] = 3] = "Right";
 })(Key || (Key = {}));
 var GameEngine = (function () {
-    function GameEngine(width, height, posOfNewPiece, pieceFactory) {
+    function GameEngine(width, height, posOfNewPiece) {
         this.lastTick = 0;
         this.field = new GameField(width, height);
         this.newPiecePos = posOfNewPiece;
         this.lastTick = Date.now();
-        this.pieceFactory = pieceFactory;
         this.placeNewActivePiece();
     }
     GameEngine.prototype.placeNewActivePiece = function () {
-        this.activePiece = this.pieceFactory.createNewPiece(this.newPiecePos);
+        this.activePiece = Piece.createRandomPiece(this.newPiecePos);
         this.placePiece(this.activePiece);
     };
     GameEngine.prototype.deletePiece = function (piece) {
@@ -138,18 +112,6 @@ var GameEngine = (function () {
     };
     return GameEngine;
 }());
-var PreviewEngine = (function (_super) {
-    __extends(PreviewEngine, _super);
-    function PreviewEngine(width, height, posOfNewPiece, pieceFactory) {
-        return _super.call(this, width, height, posOfNewPiece, pieceFactory) || this;
-    }
-    PreviewEngine.prototype.gameTick = function () {
-        this.field.clearAll();
-        this.placePiece(this.pieceFactory.peekNext(this.newPiecePos));
-        this.field.draw();
-    };
-    return PreviewEngine;
-}(GameEngine));
 var GameField = (function () {
     function GameField(width, height) {
         this.fieldWidth = width;
@@ -176,11 +138,7 @@ var GameField = (function () {
         pop();
     };
     GameField.prototype.getField = function (pos) {
-        if (pos.getX() >= 0 && pos.getX() < this.fieldWidth
-            && pos.getY() >= 0 && pos.getY() < this.fieldHeight) {
-            return this.field[pos.getX()][pos.getY()];
-        }
-        return new BorderField();
+        return this.field[pos.getX()][pos.getY()];
     };
     GameField.prototype.fillFields = function (fields, color) {
         for (var _i = 0, fields_2 = fields; _i < fields_2.length; _i++) {
@@ -199,6 +157,19 @@ var GameField = (function () {
     };
     return GameField;
 }());
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var Orientation;
 (function (Orientation) {
     Orientation[Orientation["Up"] = 0] = "Up";
@@ -208,29 +179,29 @@ var Orientation;
 })(Orientation || (Orientation = {}));
 var PieceFactory = (function () {
     function PieceFactory() {
-        this.nextC = random(COLORS);
-        this.next = random([0, 1, 2, 3]);
+        this.nextColor = random(COLORS);
+        this.nextPieceType = random([0, 1, 2, 3]);
     }
     PieceFactory.prototype.createNewPiece = function (pos) {
         var nextPiece = this.buildPiece(pos);
-        this.nextC = random(COLORS);
-        this.next = random([0, 1, 2, 3]);
+        this.nextColor = random(COLORS);
+        this.nextPieceType = random([0, 1, 2, 3]);
         return nextPiece;
     };
     PieceFactory.prototype.peekNext = function (pos) {
         return this.buildPiece(pos);
     };
     PieceFactory.prototype.buildPiece = function (pos) {
-        switch (this.next) {
+        switch (this.nextPieceType) {
             case 0:
-                return new BlockPiece(pos, this.nextC);
+                return new BlockPiece(pos, this.nextColor);
             case 1:
-                return new StreightPiece(pos, this.nextC);
+                return new StreightPiece(pos, this.nextColor);
             case 2:
-                return new ZPiece(pos, this.nextC);
+                return new ZPiece(pos, this.nextColor);
             case 3:
             default:
-                return new LPiece(pos, this.nextC);
+                return new LPiece(pos, this.nextColor);
         }
     };
     return PieceFactory;
@@ -242,6 +213,16 @@ var Piece = (function () {
         this.pos = p;
         this.color = c;
     }
+    Piece.createRandomPiece = function (pos) {
+        var c = random(COLORS);
+        var pieces = [
+            new BlockPiece(pos, c),
+            new StreightPiece(pos, c),
+            new ZPiece(pos, c),
+            new LPiece(pos, c),
+        ];
+        return random(pieces);
+    };
     Piece.prototype.getColor = function () {
         return this.color;
     };
@@ -379,17 +360,12 @@ var Point = (function () {
     return Point;
 }());
 var game;
-var preview;
 function setup() {
     createCanvas(640, 800);
-    var factory = new PieceFactory();
-    game = new GameEngine(10, 25, new Point(5, 0), factory);
-    preview = new PreviewEngine(5, 5, new Point(2, 0), factory);
+    game = new GameEngine(10, 25, new Point(5, 0));
 }
 function draw() {
     game.gameTick();
-    translate(300, 0);
-    preview.gameTick();
 }
 function keyPressed() {
     switch (keyCode) {

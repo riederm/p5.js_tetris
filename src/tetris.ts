@@ -1,6 +1,5 @@
 
 let game: GameEngine;
-let preview: GameEngine;
 
 /**
  * Entry-Method for the game -> this is called by the p5 framework
@@ -8,9 +7,7 @@ let preview: GameEngine;
  */
 function setup() {
   createCanvas(640, 800);
-  let factory = new PieceFactory();
-  game = new GameEngine(10, 25, new Point(5, 0), factory);
-  preview = new PreviewEngine(5, 5, new Point(2, 0), factory);
+  game = new GameEngine(10, 25, new Point(5, 0));
 }
 
 /**
@@ -19,8 +16,6 @@ function setup() {
  */
 function draw() {
   game.gameTick();
-  translate(300, 0);
-  preview.gameTick();
 }
 
 /**

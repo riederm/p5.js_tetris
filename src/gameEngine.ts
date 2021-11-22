@@ -21,13 +21,11 @@ class GameEngine {
      */
     protected newPiecePos: Point;
     
-    protected pieceFactory: PieceFactory;
 
-    public constructor(width: number, height: number, posOfNewPiece: Point, pieceFactory: PieceFactory) {
+    public constructor(width: number, height: number, posOfNewPiece: Point) {
         this.field = new GameField(width, height);
         this.newPiecePos = posOfNewPiece;
         this.lastTick = Date.now();
-        this.pieceFactory = pieceFactory;
         this.placeNewActivePiece();
     }
 
@@ -35,7 +33,8 @@ class GameEngine {
      * aquires a new random piece to play
      */
     private placeNewActivePiece() {
-        this.activePiece = this.pieceFactory.createNewPiece(this.newPiecePos);
+        //this.activePiece = this.pieceFactory.createNewPiece(this.newPiecePos);
+        this.activePiece = Piece.createRandomPiece(this.newPiecePos);
         this.placePiece(this.activePiece);
     }
 
@@ -169,20 +168,5 @@ class GameEngine {
         }
         return false;
     }
-
-
     
-}
-
-class PreviewEngine extends GameEngine {
-
-    public constructor(width: number, height: number, posOfNewPiece: Point, pieceFactory: PieceFactory) {
-        super(width, height, posOfNewPiece, pieceFactory);
-    }
-
-    public gameTick(){
-        this.field.clearAll();
-        this.placePiece(this.pieceFactory.peekNext(this.newPiecePos));
-        this.field.draw();
-    }
 }

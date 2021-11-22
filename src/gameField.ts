@@ -45,11 +45,7 @@ class GameField {
      * @returns the field at the given coordinates
      */
     public getField(pos: Point) {
-        if (pos.getX() >= 0 && pos.getX() < this.fieldWidth
-            && pos.getY() >= 0 && pos.getY() < this.fieldHeight) {
-            return this.field[pos.getX()][pos.getY()];
-        }
-        return new BorderField();
+        return this.field[pos.getX()][pos.getY()];
     }
 
     /**
@@ -72,7 +68,4 @@ class GameField {
             }
         }
     }
-
-
-
 }

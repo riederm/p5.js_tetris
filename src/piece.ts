@@ -8,35 +8,52 @@ enum Orientation {
 
 class PieceFactory {
 
+    // the next piece-type
+    private nextPieceType: number;
+    // the next piece-color
+    private nextColor : string;
+
     constructor() {
-        this.nextC = random(COLORS);
-        this.next = random([0,1,2,3]);
+        this.nextColor = random(COLORS);
+        this.nextPieceType = random([0,1,2,3]);
     }
 
-    private next: number;
-    private nextC : string;
+    /**
+     * returns the piece that could be peeked by peekNext(...) and calculates
+     * the next piece
+     */
     public createNewPiece(pos: Point) : Piece {
         let nextPiece = this.buildPiece(pos);
-        this.nextC = random(COLORS);
-        this.next = random([0,1,2,3]);
+        this.nextColor = random(COLORS);
+        this.nextPieceType = random([0,1,2,3]);
         return nextPiece;
     }
 
+    /**
+     * peek the current piece without calculating the next one
+     * @param pos 
+     * @returns 
+     */
     public peekNext(pos:Point): Piece {
         return this.buildPiece(pos);
     }
 
+    /**
+     * builds the piece according to this.next and this.nextColor
+     * @param pos 
+     * @returns 
+     */
     private buildPiece(pos: Point){
-        switch (this.next) {
+        switch (this.nextPieceType) {
             case 0:
-                return new BlockPiece(pos, this.nextC);
+                return new BlockPiece(pos, this.nextColor);
             case 1:
-                return new StreightPiece(pos, this.nextC);
+                return new StreightPiece(pos, this.nextColor);
             case 2:
-                return new ZPiece(pos, this.nextC);
+                return new ZPiece(pos, this.nextColor);
             case 3:
             default:
-                return new LPiece(pos, this.nextC);
+                return new LPiece(pos, this.nextColor);
         }
     }
 }
@@ -47,7 +64,6 @@ class PieceFactory {
 const COLORS: string[] = ['orangered', 'greenyellow', 'gold', 'deepskyblue', 'turquoise', 'violet'];
 
 abstract class Piece {
-
     protected pos: Point;
     protected orientation: Orientation = Orientation.Up;
     private color: string;
@@ -55,6 +71,17 @@ abstract class Piece {
     public constructor(p: Point, c: string) {
         this.pos = p;
         this.color = c;
+    }
+
+    public static createRandomPiece(pos: Point) : Piece {
+        let c = random(COLORS);
+        let pieces = [
+            new BlockPiece(pos, c),
+            new StreightPiece(pos, c),
+            new ZPiece(pos, c),
+            new LPiece(pos, c),
+        ]
+        return random(pieces);
     }
 
     public getColor() : string {

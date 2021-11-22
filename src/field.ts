@@ -28,17 +28,3 @@ class Field {
     }
 }
 
-
-class BorderField extends Field {
-    constructor() {
-        super(null);
-    }
-
-    public isBlocked() : boolean{
-        return true; //this is always full
-    }
-
-    public draw(){
-        //ignore drawing this
-    }
-}
